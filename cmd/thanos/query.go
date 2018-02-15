@@ -123,8 +123,10 @@ func runQuery(
 	storeAddrs []string,
 ) error {
 	var (
-		stores    = newStoreSet(logger, reg, tracer, peer, storeAddrs)
-		proxy     = store.NewProxyStore(logger, stores.Get, selectorLset)
+		stores = newStoreSet(logger, reg, tracer, peer, storeAddrs)
+		proxy  = store.NewProxyStore(logger, func(context.Context) ([]*store.Info, error) {
+			return stores.Get(), nil
+		}, selectorLset)
 		queryable = query.NewQueryable(logger, proxy, replicaLabel)
 		engine    = promql.NewEngine(logger, reg, maxConcurrentQueries, queryTimeout)
 	)
